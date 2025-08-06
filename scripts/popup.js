@@ -79,12 +79,42 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error("Canvas not found for download.");
             return;
         }
-        const codeType = Array.from(codeTypeRadios).find(radio => radio.checked).value;
-        const link = document.createElement('a');
-        link.href = canvas.toDataURL('image/png');
-        link.download = `${codeType}_${Date.now()}.png`;
-        link.click();
+
+        // Check if the script is running inside a Telegram Mini App
+        if (window.Telegram && window.Telegram.WebApp) {
+            // --- The Telegram Mini App Method ---
+
+            // 1. Convert the canvas to a Blob object.
+            canvas.toBlob(function(blob) {
+                // 2. Create a temporary, local URL for the Blob.
+                const url = URL.createObjectURL(blob);
+
+                // 3. Use the Telegram API to open this link.
+                // Telegram will handle it, allowing the user to view and save the image.
+                try {
+                    window.Telegram.WebApp.openLink(url);
+                } catch (error) {
+                    console.error('Telegram API openLink error:', error);
+                    // Fallback alert if something goes wrong with the API
+                    alert('Could not open image. Please take a screenshot.');
+                }
+
+                // Optional: Revoke the object URL after a delay to free up memory
+                setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+            }, 'image/png');
+
+        } else {
+            // --- The Standard Browser Download Method (Fallback) ---
+            console.log("Not in Telegram, using standard browser download.");
+            const codeType = Array.from(codeTypeRadios).find(radio => radio.checked).value;
+            const link = document.createElement('a');
+            link.href = canvas.toDataURL('image/png');
+            link.download = `${codeType}_${Date.now()}.png`;
+            link.click();
+        }
     });
+
 
     /**
      * Generates a customized QR code using a multi-canvas compositing technique.
