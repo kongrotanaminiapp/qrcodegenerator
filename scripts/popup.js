@@ -1,4 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // --- Debug Telegram WebApp Availability ---
+    console.log('Telegram WebApp:', window.Telegram?.WebApp);
+
     // --- Element References ---
     const inputText = document.getElementById('inputText');
     const codeTypeRadios = document.getElementsByName('codeType');
@@ -39,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
     for (const key in colorInputs) {
         syncColorInputs(colorInputs[key].picker, colorInputs[key].hex);
     }
-    
+
     // Toggle QR-specific options based on selected code type
     codeTypeRadios.forEach(radio => {
         radio.addEventListener('change', () => {
@@ -68,7 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
             downloadBtn.classList.remove('hidden');
         } catch (error) {
             console.error('Error generating code:', error);
-            alert('Failed to generate code. Check console for details.');
+            window.Telegram?.WebApp?.showAlert?.(`Failed to generate code: ${error.message}`);
         }
     });
 
@@ -76,37 +79,45 @@ document.addEventListener('DOMContentLoaded', () => {
     downloadBtn.addEventListener('click', () => {
         const canvas = canvasContainer.querySelector('canvas');
         if (!canvas) {
-            console.error("Canvas not found for download.");
+            console.error('Canvas not found for download.');
+            window.Telegram?.WebApp?.showAlert?.('No image to download.');
             return;
         }
 
-        // Check if the script is running inside a Telegram Mini App
+        console.log('Download button clicked. Telegram WebApp available:', !!window.Telegram && !!window.Telegram.WebApp);
+
         if (window.Telegram && window.Telegram.WebApp) {
-            // --- The Telegram Mini App Method ---
-
-            // 1. Convert the canvas to a Blob object.
-            canvas.toBlob(function(blob) {
-                // 2. Create a temporary, local URL for the Blob.
-                const url = URL.createObjectURL(blob);
-
-                // 3. Use the Telegram API to open this link.
-                // Telegram will handle it, allowing the user to view and save the image.
-                try {
-                    window.Telegram.WebApp.openLink(url);
-                } catch (error) {
-                    console.error('Telegram API openLink error:', error);
-                    // Fallback alert if something goes wrong with the API
-                    alert('Could not open image. Please take a screenshot.');
-                }
-
-                // Optional: Revoke the object URL after a delay to free up memory
-                setTimeout(() => URL.revokeObjectURL(url), 1000);
-
-            }, 'image/png');
-
+            // Telegram Mini App Method
+            // Try data URL first
+            const dataUrl = canvas.toDataURL('image/png');
+            try {
+                window.Telegram.WebApp.openLink(dataUrl);
+                console.log('Opened data URL in Telegram.');
+                window.Telegram.WebApp.showAlert('Image opened. Check Telegram for download options.');
+            } catch (error) {
+                console.error('Telegram openLink error with data URL:', error);
+                // Fallback to Blob URL
+                canvas.toBlob(function(blob) {
+                    if (!blob) {
+                        console.error('Failed to create blob from canvas.');
+                        window.Telegram.WebApp.showAlert('Error generating image.');
+                        return;
+                    }
+                    const url = URL.createObjectURL(blob);
+                    try {
+                        window.Telegram.WebApp.openLink(url);
+                        console.log('Opened Blob URL in Telegram.');
+                        window.Telegram.WebApp.showAlert('Image opened. Check Telegram for download options.');
+                    } catch (error) {
+                        console.error('Telegram openLink error with Blob URL:', error);
+                        window.Telegram.WebApp.showAlert(`Download failed: ${error.message}. Please take a screenshot.`);
+                    }
+                    setTimeout(() => URL.revokeObjectURL(url), 1000);
+                }, 'image/png');
+            }
         } else {
-            // --- The Standard Browser Download Method (Fallback) ---
-            console.log("Not in Telegram, using standard browser download.");
+            // Standard Browser Download Method (Fallback)
+            console.log('Not in Telegram, using standard browser download.');
             const codeType = Array.from(codeTypeRadios).find(radio => radio.checked).value;
             const link = document.createElement('a');
             link.href = canvas.toDataURL('image/png');
@@ -114,7 +125,6 @@ document.addEventListener('DOMContentLoaded', () => {
             link.click();
         }
     });
-
 
     /**
      * Generates a customized QR code using a multi-canvas compositing technique.
@@ -149,12 +159,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const qrCanvas = tempDiv.querySelector('canvas');
             if (!qrCanvas) {
                 console.error('QR code canvas was not generated by the library.');
+                window.Telegram?.WebApp?.showAlert?.('Failed to generate QR code canvas.');
                 document.body.removeChild(tempDiv);
                 return;
             }
 
             // --- Start of new drawing logic ---
-
             // 5. Create the final, visible canvas and its context
             const finalCanvas = document.createElement('canvas');
             finalCanvas.width = size;
@@ -207,10 +217,9 @@ document.addEventListener('DOMContentLoaded', () => {
             // 13. Display the final canvas and clean up the temporary div
             canvasContainer.appendChild(finalCanvas);
             document.body.removeChild(tempDiv);
-
         }, 100);
     }
-    
+
     /**
      * Draws the selected icon onto the center of the canvas.
      * @param {CanvasRenderingContext2D} ctx - The context of the final canvas.
