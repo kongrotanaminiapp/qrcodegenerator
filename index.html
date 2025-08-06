@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rotana QR-Barcode Generator</title>
+  <script src="./css/tailwind.css"></script>
+  <!-- NOTE: Using a fork of the original qrcode.js that fixes an issue with canvas creation -->
+  <script src="./libs/qrcode.min.js"></script>
+  <script src="./libs/JsBarcode.all.min.js"></script>
+</head>
+<body class="bg-gray-200 text-gray-800 font-['Roboto'] flex flex-col min-h-[600px]">
+  <div class="p-6 max-w-md mx-auto flex-1 bg-white rounded-lg shadow-sm" style="padding: 2.5rem;margin-top: 10px;">
+    <h1 class="text-2xl font-bold text-center mb-6 text-gray-700">Rotana QR-Barcode Generator</h1>
+    
+    <div class="mb-5">
+      <label for="inputText" class="block text-sm font-medium text-gray-600 mb-1">Input Text</label>
+      <input type="text" id="inputText" class="p-2 w-full bg-gray-50 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 transition duration-150" placeholder="Enter text or URL">
+    </div>
+
+    <div class="mb-5">
+      <label class="block text-sm font-medium text-gray-600 mb-1">Type</label>
+      <div class="flex space-x-5">
+        <label class="flex items-center">
+          <input type="radio" name="codeType" value="qr" class="mr-2 text-gray-600 focus:ring-gray-500" checked>
+          <span class="text-gray-700">QR Code</span>
+        </label>
+        <label class="flex items-center">
+          <input type="radio" name="codeType" value="barcode" class="mr-2 text-gray-600 focus:ring-gray-500">
+          <span class="text-gray-700">Barcode</span>
+        </label>
+      </div>
+    </div>
+
+    <div id="qrOptions">
+      <!-- Background Color -->
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-600 mb-1">Background Color</label>
+        <div class="flex items-center space-x-2 mb-2">
+          <input type="color" id="bgColor" class="w-8 h-8 p-0 border-none bg-gray-50 rounded-md cursor-pointer" value="#FFFFFF">
+          <input type="text" id="bgColorHex" class="p-2 w-full bg-gray-50 border border-gray-300 rounded-md" value="#FFFFFF" placeholder="#FFFFFF">
+        </div>
+      </div>
+
+      <!-- Foreground Color -->
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-600 mb-1">Foreground Color / Gradient Start</label>
+        <div class="flex items-center space-x-2 mb-2">
+          <input type="color" id="fgColor" class="w-8 h-8 p-0 border-none bg-gray-50 rounded-md cursor-pointer" value="#000000">
+          <input type="text" id="fgColorHex" class="p-2 w-full bg-gray-50 border border-gray-300 rounded-md" value="#000000" placeholder="#000000">
+        </div>
+      </div>
+      
+      <!-- Gradient Color -->
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-600 mb-1">Gradient End Color (Optional)</label>
+        <div class="flex items-center space-x-2 mb-2">
+          <input type="color" id="gradientColor" class="w-8 h-8 p-0 border-none bg-gray-50 rounded-md cursor-pointer" value="#000000">
+          <input type="text" id="gradientColorHex" class="p-2 w-full bg-gray-50 border border-gray-300 rounded-md" placeholder="Leave empty for solid color">
+        </div>
+      </div>
+
+      <!-- Icon Input -->
+      <div class="mb-5">
+        <label class="block text-sm font-medium text-gray-600 mb-1">Center Icon (Optional)</label>
+        <input type="file" id="iconInput" accept="image/*" class="p-2 w-full bg-gray-50 border border-gray-300 rounded-md text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-gray-200 file:text-gray-700 hover:file:bg-gray-300">
+      </div>
+    </div>
+
+    <button id="generateBtn" class="w-full bg-gray-600 text-white p-2 rounded-md hover:bg-gray-700 transition duration-200">Generate</button>
+
+    <div id="output" class="mt-5 flex justify-center items-center p-2 bg-gray-100 rounded-md min-h-[272px]">
+      <div id="canvas-container" class="rounded-md"></div>
+    </div>
+
+    <button id="downloadBtn" class="w-full bg-green-600 text-white p-2 rounded-md hover:bg-green-700 transition duration-200 mt-3 hidden">Download</button>
+  </div>
+
+  <footer class="text-center text-sm text-gray-500 py-2 bg-gray-200">
+    Develop by: <a href="https://www.facebook.com/krotanaofficial" style="color:blue">KONG Rotana</a> Version 1.0
+  </footer>
+
+  <script src="popup.js"></script>
+</body>
+</html>
